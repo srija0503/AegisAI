@@ -1,0 +1,32 @@
+You are an automated Firewall Security Policy Generator.
+Based on the validated threat assessment below, generate high-precision, low-latency firewall filtering rules to neutralize the threat while preventing collateral disruption of legitimate services.
+
+THREAT ASSESSMENT:
+------------------
+- Threat Category: {threat_category}
+- Target Protocol: {protocol}
+- Offending Source IP / Subnet: {src_ip}
+- Targeted Destination Port: {dst_port}
+- Severity: {severity}
+- Confidence: {confidence}
+- Recommended Mitigation: {recommended_mitigation}
+
+RULE SYNTAX REQUIREMENTS:
+-------------------------
+The firewall engine expects JSON format matching the FirewallRule schema:
+{
+  "rule_id": "rag_rule_<unique_hash>",
+  "priority": <int between 10 and 50>,
+  "action": "block" | "drop" | "alert",
+  "src_ip": "<ip_or_cidr>",
+  "dst_ip": "any" | "<ip>",
+  "src_port": null | <port>,
+  "dst_port": null | <port_or_list>,
+  "protocol": "tcp" | "udp" | "icmp" | "any",
+  "tcp_flags": null | ["SYN", "ACK", ...],
+  "description": "<concise explanation>",
+  "created_by": "rag_agent",
+  "enabled": true
+}
+
+Generate the JSON rule block immediately.

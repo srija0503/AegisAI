@@ -1,0 +1,18 @@
+SECURITY INCIDENT SUMMARY:
+==========================
+Timestamp: {timestamp}
+Incident ID: {incident_id}
+Trigger: RL Agent Anomaly Score {anomaly_score}
+
+INCIDENT PARTICULARS:
+- Flow: {src_ip}:{src_port} -> {dst_ip}:{dst_port} ({protocol})
+- Classified Threat: {threat_name} (Severity: {severity})
+- Confidence Level: {confidence}
+
+MATCHED CVEs / MITRE TACTICS:
+{matched_intel}
+
+AUTOMATED DEFENSE ACTION:
+- Applied Rules: {applied_rules}
+- Action Taken: {action_taken}
+- Circuit Breaker Status: {circuit_breaker_status}
