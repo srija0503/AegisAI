@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "quantum_secure_federated_firewall"
+version = "0.1.0"
+description = "Multi-layered quantum-secure federated firewall with RL-based packet inspection and Agentic RAG"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["firewall", "federated-learning", "post-quantum-cryptography", "reinforcement-learning", "cybersecurity"]
+
+[project.scripts]
+qsff-node   = "scripts.start_node:main"
+qsff-server = "scripts.start_server:main"
+qsff-sim    = "scripts.start_simulation:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["firewall*", "rl_agent*", "agentic_rag*", "knowledge_base*",
+           "federated_learning*", "pqc_security*", "communication*",
+           "backend*", "simulation*", "datasets*", "monitoring*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short --cov=. --cov-report=term-missing"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "I", "N", "W"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true

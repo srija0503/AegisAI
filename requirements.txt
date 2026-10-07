@@ -1,0 +1,62 @@
+# ══════════════════════════════════════════════════
+#  Core Python deps
+# ══════════════════════════════════════════════════
+
+# Web framework
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+httpx>=0.27.0
+
+# Data
+numpy>=1.26.4
+pandas>=2.2.2
+scikit-learn>=1.4.2
+pyarrow>=16.0.0
+
+# Packet capture / networking
+scapy>=2.5.0
+
+# Deep learning / RL
+torch>=2.3.0
+torchvision>=0.18.0
+gymnasium>=0.29.1
+
+# Config & validation
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+pyyaml>=6.0.1
+python-dotenv>=1.0.1
+
+# Vector DB (knowledge base — Member 2)
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+
+# PQC — bindings (Member 3)
+# oqs-python is the liboqs Python wrapper
+# install via: pip install open-quantum-safe / see README
+# oqs>=0.9.0  # uncomment once liboqs is installed
+
+# Federated learning (Member 3)
+flwr>=1.9.0          # Flower FL framework
+
+# Serialization
+msgpack>=1.0.8
+
+# Database ORM
+sqlalchemy>=2.0.30
+alembic>=1.13.1
+
+# Testing
+pytest>=8.2.0
+pytest-asyncio>=0.23.7
+pytest-cov>=5.0.0
+
+# Monitoring / logging
+structlog>=24.2.0
+prometheus-client>=0.20.0
+
+# Utilities
+tqdm>=4.66.4
+click>=8.1.7
+rich>=13.7.1
+requests>=2.32.0

@@ -1,0 +1,54 @@
+# ── Dockerfile.edge ──────────────────────────────────────────────────────────
+# Edge firewall node image (Member 1's code: firewall + RL agent)
+# ─────────────────────────────────────────────────────────────────────────────
+
+FROM python:3.11-slim AS base
+
+# Install system dependencies needed by Scapy
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpcap-dev \
+    tcpdump \
+    net-tools \
+    iputils-ping \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# ── Install Python dependencies ───────────────────────────────────────────────
+COPY requirements.txt .
+# Install CPU-only torch for edge nodes (saves ~1GB)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
+
+# ── Copy source code ──────────────────────────────────────────────────────────
+COPY config/        ./config/
+COPY datasets/      ./datasets/
+COPY firewall/      ./firewall/
+COPY rl_agent/      ./rl_agent/
+COPY simulation/    ./simulation/
+COPY monitoring/    ./monitoring/
+COPY scripts/       ./scripts/
+COPY __init__.py    .
+
+# ── Create runtime directories ────────────────────────────────────────────────
+RUN mkdir -p data/processed/rl_training \
+             data/raw/intrusion \
+             rl_agent/models/checkpoints \
+             logs
+
+# ── Edge node runs as non-root ────────────────────────────────────────────────
+RUN useradd -m -u 1001 edgeuser && chown -R edgeuser:edgeuser /app
+USER edgeuser
+
+# ── Environment defaults ──────────────────────────────────────────────────────
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV NODE_ROLE=edge
+
+EXPOSE 9000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:9000/health || exit 1
+
+CMD ["python", "scripts/start_node.py"]

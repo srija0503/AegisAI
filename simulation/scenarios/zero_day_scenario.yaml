@@ -1,0 +1,21 @@
+scenario_name: "zero_day_rag_escalation"
+description: "Injects mutated out-of-distribution traffic with ambiguous characteristics to test low-confidence detection and Agentic RAG dynamic rule generation."
+duration_seconds: 25
+target_ip: "192.168.1.100"
+stages:
+  - name: "benign_flow"
+    duration_seconds: 5
+    traffic_type: "benign"
+    rate_pps: 30
+  - name: "zero_day_incursion"
+    duration_seconds: 15
+    traffic_type: "anomaly"
+    rate_pps: 60
+  - name: "mitigated_steady_state"
+    duration_seconds: 5
+    traffic_type: "benign"
+    rate_pps: 30
+expected_results:
+  rag_triggered: true
+  min_rag_escalation_count: 5
+  dynamic_rule_applied: true

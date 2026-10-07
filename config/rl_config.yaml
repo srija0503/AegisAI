@@ -1,0 +1,60 @@
+# ══════════════════════════════════════════════
+#  Reinforcement Learning Agent Configuration
+# ══════════════════════════════════════════════
+
+environment:
+  name: "FirewallEnv-v1"
+  state_dim: 41              # number of network flow features
+  action_dim: 3              # 0=ALLOW, 1=BLOCK, 2=TRIGGER_RAG
+  max_steps_per_episode: 500
+  observation_normalization: true
+
+agent:
+  type: "DQN"                # DQN | DDQN | PPO (future)
+  gamma: 0.99                # discount factor
+  learning_rate: 0.0001
+  batch_size: 64
+  target_update_freq: 200    # steps between target network syncs
+
+exploration:
+  strategy: "epsilon_greedy"
+  epsilon_start: 1.0
+  epsilon_end: 0.05
+  epsilon_decay_steps: 10000
+
+replay_buffer:
+  type: "prioritized"        # uniform | prioritized
+  capacity: 50000
+  alpha: 0.6                 # PER priority exponent
+  beta_start: 0.4            # PER importance sampling start
+  beta_end: 1.0
+  beta_annealing_steps: 20000
+
+reward:
+  true_positive: 1.0         # correctly block attack
+  true_negative: 0.2         # correctly allow benign
+  false_positive: -1.0       # blocked legitimate traffic
+  false_negative: -2.0       # missed attack (worst outcome)
+  latency_penalty: -0.5      # per 10ms above baseline
+  rag_trigger_cost: -0.1     # small cost for triggering RAG
+
+network:
+  hidden_dims: [256, 256, 128]
+  activation: "relu"
+  dueling: true              # Dueling DQN heads
+  noisy_nets: false
+
+training:
+  total_episodes: 2000
+  eval_interval: 100         # episodes
+  checkpoint_interval: 100
+  checkpoint_dir: "./rl_agent/models/checkpoints/"
+  log_dir: "./rl_agent/logs/"
+  early_stopping_patience: 200   # episodes without improvement
+  min_replay_size: 1000          # start training after N samples
+
+dataset:
+  name: "NSL-KDD"
+  path: "./data/processed/rl_training/"
+  train_file: "train.parquet"
+  test_file:  "test.parquet"

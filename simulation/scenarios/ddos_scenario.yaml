@@ -1,0 +1,23 @@
+scenario_name: "ddos_syn_flood_mitigation"
+description: "Simulates high-rate distributed SYN flood against public web servers to test emergency circuit breaker and RL detection."
+duration_seconds: 30
+target_ip: "192.168.1.100"
+stages:
+  - name: "baseline_traffic"
+    duration_seconds: 5
+    traffic_type: "benign"
+    rate_pps: 50
+  - name: "syn_flood_surge"
+    duration_seconds: 15
+    traffic_type: "syn_flood"
+    rate_pps: 2000
+    attacker_subnets:
+      - "198.51.100.0/24"
+  - name: "recovery"
+    duration_seconds: 10
+    traffic_type: "benign"
+    rate_pps: 50
+expected_results:
+  min_detection_rate: 0.90
+  max_false_positive_rate: 0.05
+  circuit_breaker_triggered: true

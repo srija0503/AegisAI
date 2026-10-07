@@ -1,0 +1,21 @@
+scenario_name: "reconnaissance_port_scan"
+description: "Simulates stealth reconnaissance sweep probing internal and edge services to evaluate rule engine and flow anomaly detection."
+duration_seconds: 20
+target_ip: "192.168.1.100"
+stages:
+  - name: "normal_operations"
+    duration_seconds: 5
+    traffic_type: "benign"
+    rate_pps: 20
+  - name: "port_sweep"
+    duration_seconds: 10
+    traffic_type: "port_scan"
+    attacker_ip: "203.0.113.88"
+    rate_pps: 100
+  - name: "post_scan_monitoring"
+    duration_seconds: 5
+    traffic_type: "benign"
+    rate_pps: 20
+expected_results:
+  min_detection_rate: 0.85
+  ip_auto_blocked: true

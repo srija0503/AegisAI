@@ -1,0 +1,48 @@
+# ══════════════════════════════════════════════
+#  Firewall Engine Configuration
+# ══════════════════════════════════════════════
+
+capture:
+  interface: "eth0"          # NIC to sniff on
+  filter: "ip"               # BPF filter string
+  pcap_replay_path: "./data/raw/network_traffic/"
+  snaplen: 65535
+  promisc: true
+  timeout_ms: 1000
+
+flow:
+  timeout_seconds: 120       # inactive flow expiry
+  max_flows: 100000
+  cleanup_interval_seconds: 30
+
+feature_extraction:
+  window_size: 10            # packets per feature window
+  include_payload: false     # exclude raw payload for privacy
+
+rules:
+  default_policy: "allow"    # allow | block (fail-open vs fail-closed)
+  rules_file: "./config/firewall_rules.yaml"
+  reload_interval_seconds: 60
+
+allowlist:
+  file: "./data/allowlist.txt"
+  always_allow_private: true
+  private_ranges:
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+    - "192.168.0.0/16"
+    - "127.0.0.0/8"
+
+blocklist:
+  file: "./data/blocklist.txt"
+  auto_block_threshold: 0.95   # RL confidence score to auto-block
+
+emergency:
+  enabled: true
+  block_duration_seconds: 300
+  threshold_pps: 10000         # packets-per-second spike trigger
+
+classifier:
+  mode: "rl"                   # rule | rl | hybrid
+  confidence_threshold: 0.80   # below this → trigger RAG
+  rl_model_path: "./rl_agent/models/checkpoints/best_model.pt"

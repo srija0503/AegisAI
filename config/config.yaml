@@ -1,0 +1,45 @@
+# ══════════════════════════════════════════════
+#  Global System Configuration
+# ══════════════════════════════════════════════
+
+project:
+  name: "Quantum-Secure Federated Firewall"
+  version: "0.1.0"
+  environment: "development"   # development | staging | production
+
+node:
+  id: "node_01"
+  role: "edge"                 # edge | aggregator
+  region: "us-east"
+
+network:
+  aggregator:
+    host: "localhost"
+    port: 8443
+    timeout_seconds: 30
+    retry_attempts: 3
+  backend:
+    host: "0.0.0.0"
+    port: 8000
+  dashboard:
+    port: 5173
+
+database:
+  url: "sqlite:///./data/firewall.db"
+  echo: false
+  pool_size: 5
+
+vector_db:
+  provider: "chroma"
+  host: "localhost"
+  port: 8001
+  persist_directory: "./data/vector_db"
+  collection_name: "threat_intelligence"
+
+logging:
+  level: "INFO"               # DEBUG | INFO | WARNING | ERROR | CRITICAL
+  format: "json"              # json | text
+  output: "both"              # file | stdout | both
+  log_dir: "./logs"
+  max_file_size_mb: 50
+  backup_count: 5

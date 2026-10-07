@@ -1,0 +1,151 @@
+version: "3.9"
+
+# ══════════════════════════════════════════════════════════════
+#  Quantum-Secure Federated Firewall — Docker Compose
+#  Services: edge-node-01, edge-node-02, edge-node-03,
+#             aggregator, backend, rag-service, dashboard
+# ══════════════════════════════════════════════════════════════
+
+networks:
+  qsff_net:
+    driver: bridge
+
+volumes:
+  data_volume:
+  vector_db_volume:
+  models_volume:
+
+services:
+  # ── Edge Node 01 ─────────────────────────────────────────────
+  edge-node-01:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.edge
+    container_name: qsff-edge-01
+    environment:
+      - NODE_ID=node_01
+      - AGGREGATOR_HOST=aggregator
+      - AGGREGATOR_PORT=8443
+    volumes:
+      - data_volume:/app/data
+      - models_volume:/app/rl_agent/models
+      - ./edge/node_01:/app/edge/node_01
+    networks:
+      - qsff_net
+    depends_on:
+      - aggregator
+    restart: unless-stopped
+
+  # ── Edge Node 02 ─────────────────────────────────────────────
+  edge-node-02:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.edge
+    container_name: qsff-edge-02
+    environment:
+      - NODE_ID=node_02
+      - AGGREGATOR_HOST=aggregator
+      - AGGREGATOR_PORT=8443
+    volumes:
+      - data_volume:/app/data
+      - models_volume:/app/rl_agent/models
+      - ./edge/node_02:/app/edge/node_02
+    networks:
+      - qsff_net
+    depends_on:
+      - aggregator
+    restart: unless-stopped
+
+  # ── Edge Node 03 ─────────────────────────────────────────────
+  edge-node-03:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.edge
+    container_name: qsff-edge-03
+    environment:
+      - NODE_ID=node_03
+      - AGGREGATOR_HOST=aggregator
+      - AGGREGATOR_PORT=8443
+    volumes:
+      - data_volume:/app/data
+      - models_volume:/app/rl_agent/models
+      - ./edge/node_03:/app/edge/node_03
+    networks:
+      - qsff_net
+    depends_on:
+      - aggregator
+    restart: unless-stopped
+
+  # ── Central Aggregator (FL + PQC) ────────────────────────────
+  aggregator:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.server
+    container_name: qsff-aggregator
+    ports:
+      - "8443:8443"
+    environment:
+      - NODE_ROLE=aggregator
+      - FL_MIN_CLIENTS=2
+      - FL_ROUNDS=10
+    volumes:
+      - models_volume:/app/rl_agent/models
+    networks:
+      - qsff_net
+    restart: unless-stopped
+
+  # ── RAG Service ──────────────────────────────────────────────
+  rag-service:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.rag
+    container_name: qsff-rag
+    ports:
+      - "8001:8001"
+    environment:
+      - CHROMA_HOST=rag-service
+      - CHROMA_PORT=8001
+      - LLM_ENDPOINT=http://host.docker.internal:11434
+    volumes:
+      - vector_db_volume:/app/data/vector_db
+    networks:
+      - qsff_net
+    restart: unless-stopped
+
+  # ── Backend API ──────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.server
+    container_name: qsff-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - BACKEND_PORT=8000
+      - DATABASE_URL=sqlite:///./data/firewall.db
+      - CHROMA_HOST=rag-service
+    volumes:
+      - data_volume:/app/data
+    networks:
+      - qsff_net
+    depends_on:
+      - rag-service
+      - aggregator
+    restart: unless-stopped
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+  # ── Dashboard (React/Vite) ───────────────────────────────────
+  dashboard:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.dashboard
+    container_name: qsff-dashboard
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    networks:
+      - qsff_net
+    depends_on:
+      - backend
+    restart: unless-stopped
